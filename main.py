@@ -13,10 +13,11 @@ for file_path in glob.glob(pattern):
         # 👇 Use engine='openpyxl' in both ExcelFile and read_excel
         xl = pd.ExcelFile(file_path, engine='openpyxl')
         if target_sheet in xl.sheet_names:
-            df = pd.read_excel(file_path, sheet_name=target_sheet, engine='openpyxl')  # 👈 Also here
+            df = pd.read_excel(file_path, sheet_name=target_sheet, engine='openpyxl')
+
             df['srcc'] = os.path.basename(file_path)
             combined_data.append(df)
-            print(u"✅ read:", os.path.basename(file_path))
+            print(u"read:", os.path.basename(file_path))
         else:
             print(u"⚠️ Το φύλλο '{}' δεν υπάρχει στο: {}".format(target_sheet, os.path.basename(file_path)))
     except Exception as e:
@@ -24,7 +25,7 @@ for file_path in glob.glob(pattern):
 
 if combined_data:
     final_df = pd.concat(combined_data, ignore_index=True)
-    final_df.to_excel("all.xlsx", index=False, engine='openpyxl')  # 👈 And here for writing
+    final_df.to_excel("e:\\all.xlsx", index=False, engine='openpyxl')  # 👈 And here for writing
     print(u"\n🎉 ok  all.xlsx!")
 else:
     print(u"not found.")
