@@ -1,31 +1,73 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
-import glob
 import os
+from tkinter import Tk, filedialog
 
-folder_path = r"E:\OneDrive\dded\2024-25\anaplir\opsd\erc"
-pattern = os.path.join(folder_path, "*.xlsx")
-combined_data = []
-target_sheet = "Βασικοί Τίτλοι Σπουδών"
 
-for file_path in glob.glob(pattern):
+def merge_all_sheets(input_path, output_path):
+    """
+    Merges all sheets of a single Excel workbook into one sheet, adding sheet name as first column.
+    """
+    if not os.path.isfile(input_path):
+        print(f"\n❌ Το αρχείο δεν βρέθηκε: {input_path}")
+        return
+
     try:
-        # 👇 Use engine='openpyxl' in both ExcelFile and read_excel
-        xl = pd.ExcelFile(file_path, engine='openpyxl')
-        if target_sheet in xl.sheet_names:
-            df = pd.read_excel(file_path, sheet_name=target_sheet, engine='openpyxl')
-
-            df['srcc'] = os.path.basename(file_path)
-            combined_data.append(df)
-            print(u"read:", os.path.basename(file_path))
-        else:
-            print(u"⚠️ Το φύλλο '{}' δεν υπάρχει στο: {}".format(target_sheet, os.path.basename(file_path)))
+        xl = pd.ExcelFile(input_path, engine='openpyxl')
     except Exception as e:
-        print(u"❌ Σφάλμα στο", os.path.basename(file_path), ":", str(e))
+        print(f"\n❌ Δεν ήταν δυνατή η ανάγνωση του αρχείου: {e}")
+        return
 
-if combined_data:
-    final_df = pd.concat(combined_data, ignore_index=True)
-    final_df.to_excel("e:\\all.xlsx", index=False, engine='openpyxl')  # 👈 And here for writing
-    print(u"\n🎉 ok  all.xlsx!")
-else:
-    print(u"not found.")
+    combined_data = []
+
+    for sheet_name in xl.sheet_names:
+        try:
+            df = xl.parse(sheet_name)
+            if not df.empty:
+                df.insert(0, 'source_sheet', sheet_name)
+                combined_data.append(df)
+                print(f"✅ Προστέθηκε το φύλλο: {sheet_name}")
+            else:
+                print(f"⚠️ Άδειο φύλλο: {sheet_name}")
+        except Exception as e:
+            print(f"❌ Σφάλμα στο φύλλο '{sheet_name}': {e}")
+
+    if combined_data:
+        final_df = pd.concat(combined_data, ignore_index=True)
+
+        try:
+            final_df.to_excel(output_path, index=False, engine='openpyxl')
+            print(f"\n🎉 Η συγχώνευση ολοκληρώθηκε στο: {output_path}")
+        except Exception as e:
+            print(f"\n❌ Σφάλμα κατά την αποθήκευση: {e}")
+    else:
+        print("\n⚠️ Δεν βρέθηκαν δεδομένα προς συγχώνευση.")
+
+
+if __name__ == "__main__":
+    print("🔄 Συγχώνευση όλων των φύλλων ενός αρχείου Excel")
+
+    # Απενεργοποιούμε το κενό παράθυρο Tk
+    root = Tk()
+    root.withdraw()
+
+    # Επιλογή αρχείου εισόδου
+    input_file = filedialog.askopenfilename(
+        title="📥 Επιλέξτε το αρχείο Excel εισόδου",
+        filetypes=[("Excel files", "*.xlsx")])
+
+    if not input_file:
+        print("❌ Δεν επιλέχθηκε αρχείο.")
+        exit()
+
+    # Επιλογή αρχείου εξόδου
+    output_file = filedialog.asksaveasfilename(
+        title="📤 Επιλέξτε που θα αποθηκευτεί το αρχείο",
+        defaultextension=".xlsx",
+        filetypes=[("Excel files", "*.xlsx")])
+
+    if not output_file:
+        print("❌ Δεν επιλέχθηκε αρχείο αποθήκευσης.")
+        exit()
+
+    merge_all_sheets(input_file, output_file)
