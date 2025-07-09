@@ -31,7 +31,7 @@ def eisagogi_grammon_klados(df):
 
     for klados, group in df.groupby("KLADOS"):
         empty_row = [""] * len(columns)
-        empty_row[0] = f"ΚΛΑΔΟΣ = {klados}"
+        empty_row[0] = f"KLADOS = {klados}"
         rows.append(empty_row)
         rows.extend(group.values.tolist())
 
