@@ -13,7 +13,7 @@ def filter_dodekanisa(input_file):
         return
 
     if "ΟΛΑ" not in xls:
-        print("❌ Το αρχείο δεν περιέχει φύλλο με όνομα 'ολα'")
+        print("❌ Το αρχείο δεν περιέχει φύλλο με όνομα 'ΟΛΑ'")
         return
 
     df = xls["ΟΛΑ"]
