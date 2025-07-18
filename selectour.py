@@ -17,9 +17,8 @@ def filter_dodekanisa(input_file):
         return
 
     df = xls["ΟΛΑ"]
-
-    # Φιλτράρισμα: εντοπισμός της λέξης "ΔΩΔΕΚΑΝΗΣ" σε οποιοδήποτε κελί κάθε γραμμής
-    mask = df.apply(lambda row: row.astype(str).str.upper().str.contains("ΔΩΔΕΚΑΝΗΣ").any(), axis=1)
+    # Φιλτράρισμα: εντοπισμός "ΔΩΔΕΚΑΝΗΣ" ή "ΡΟΔΟΣ" σε οποιοδήποτε κελί κάθε γραμμής
+    mask = df.apply(lambda row: row.astype(str).str.upper().str.contains("ΔΩΔΕΚΑΝΗΣ|ΡΟΔΟΣ").any(), axis=1)
     filtered_df = df[mask]
 
     if filtered_df.empty:
