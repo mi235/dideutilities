@@ -4,13 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cd0ddf1f-4102-48f6-ad88-44395a5fb6f9" name="Changes" comment="ΠΡΟΣΘΗΚΗ ΜΕΤΑΤΡΟΠΗ ΣΕ ΧΛΣ ΑΠΟ ΠΔΦ">
-      <change afterPath="$PROJECT_DIR$/DIASELSTAT.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ESPAELSTAT.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/TestProject.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/TestProject.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="cd0ddf1f-4102-48f6-ad88-44395a5fb6f9" name="Changes" comment="enhmervsh stat">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/selectour.py" beforeDir="false" afterPath="$PROJECT_DIR$/selectour.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -245,7 +240,14 @@
       <option name="project" value="LOCAL" />
       <updated>1752477689009</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="enhmervsh stat">
+      <created>1752841271032</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1752841271032</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -292,7 +294,8 @@
     <MESSAGE value="diavazv polla idia ejel kai ta mazeyw se ena" />
     <MESSAGE value="vohthiktika programmatakia gia xeirismo xls xml" />
     <MESSAGE value="ΠΡΟΣΘΗΚΗ ΜΕΤΑΤΡΟΠΗ ΣΕ ΧΛΣ ΑΠΟ ΠΔΦ" />
-    <option name="LAST_COMMIT_MESSAGE" value="ΠΡΟΣΘΗΚΗ ΜΕΤΑΤΡΟΠΗ ΣΕ ΧΛΣ ΑΠΟ ΠΔΦ" />
+    <MESSAGE value="enhmervsh stat" />
+    <option name="LAST_COMMIT_MESSAGE" value="enhmervsh stat" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
