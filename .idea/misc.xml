@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+<<<<<<< HEAD
   <component name="Black">
     <option name="sdkName" value="Python 2.7 (TestProject)" />
   </component>
@@ -7,4 +8,7 @@
   <component name="PyPackaging">
     <option name="earlyReleasesAsUpgrades" value="true" />
   </component>
+=======
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 2.7 (TestProject)" project-jdk-type="Python SDK" />
+>>>>>>> b452bbeb17327f6bc2f0eab8f821a7be72c5e751
 </project>
