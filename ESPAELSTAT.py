@@ -1,125 +1,141 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import os
-import tkinter as tk
-from tkinter import filedialog
+from tkinter import Tk, filedialog, simpledialog
+import sys
 
-def merge_excel_sheets_select_fields(input_path, output_path):
-    if not os.path.isfile(input_path):
-        print(f"\n❌ Το αρχείο δεν βρέθηκε: {input_path}")
-        return
+# Αν έχεις Windows και θες σωστή απεικόνιση στην κονσόλα:
+sys.stdout.reconfigure(encoding='utf-8')
 
-    try:
-        xl = pd.ExcelFile(input_path, engine='openpyxl')
-    except Exception as e:
-        print(f"\n❌ Δεν ήταν δυνατή η ανάγνωση του αρχείου: {e}")
-        return
+def merge_all_excels_select_fields(excel_paths, output_path, selected_fields, header_row):
+    combined_data = []
 
-    all_headers = set()
-    for sheet in xl.sheet_names:
+    for file_path in excel_paths:
         try:
-            df = xl.parse(sheet, header=5)
-            all_headers.update(df.columns.tolist())
+            xl = pd.ExcelFile(file_path, engine='openpyxl')
         except Exception as e:
-            print(f"⚠️ Παράβλεψη φύλλου '{sheet}': {e}")
+            print(f"❌ Σφάλμα στο αρχείο '{file_path}': {e}")
+            continue
 
-    if not all_headers:
-        print("\n⚠️ Δεν βρέθηκαν πεδία.")
-        return
+        for sheet_name in xl.sheet_names:
+            try:
+                # Έλεγχος αν υπάρχουν τουλάχιστον 4 γραμμές
+                preview_df = xl.parse(sheet_name, header=None)
+                if len(preview_df) < (header_row + 1):
+                    print(f"⚠️ Το φύλλο '{sheet_name}' στο '{os.path.basename(file_path)}' έχει λιγότερες από {header_row+1} γραμμές. Αγνοείται.")
+                    continue
 
-    selected_fields = show_field_selector(sorted(all_headers))
-    if not selected_fields:
-        print("❌ Δεν επιλέχθηκαν πεδία.")
-        return
+                # Διαβάζουμε με header από κατάλληλη γραμμή
+                df = xl.parse(sheet_name, header=header_row)
+                if not df.empty:
+                    df.insert(0, 'source_sheet', sheet_name)
+                    df.insert(0, 'source_file', os.path.basename(file_path))
 
-    combined = []
-    for sheet in xl.sheet_names:
-        try:
-            df = xl.parse(sheet, header=5)
-            df = df[selected_fields]
-            df.insert(0, 'source_sheet', sheet)
-            combined.append(df)
-            print(f"✅ Προστέθηκε το φύλλο: {sheet}")
-        except Exception as e:
-            print(f"❌ Σφάλμα στο φύλλο '{sheet}': {e}")
+                    # Κράτα μόνο τις επιλεγμένες στήλες (όσες υπάρχουν)
+                    available_fields = [col for col in selected_fields if col in df.columns]
+                    meta_fields = ['source_file', 'source_sheet']
+                    df = df[meta_fields + available_fields]
 
-    if combined:
-        final_df = pd.concat(combined, ignore_index=True)
+                    combined_data.append(df)
+                    print(f"✅ Προστέθηκε το φύλλο: {sheet_name} από {os.path.basename(file_path)}")
+                else:
+                    print(f"⚠️ Άδειο φύλλο: {sheet_name} στο {os.path.basename(file_path)}")
+            except Exception as e:
+                print(f"❌ Σφάλμα στο φύλλο '{sheet_name}': {e}")
+
+    if combined_data:
+        final_df = pd.concat(combined_data, ignore_index=True)
         try:
             final_df.to_excel(output_path, index=False, engine='openpyxl')
-            print(f"\n🎉 Αποθηκεύτηκε στο: {output_path}")
+            print(f"\n🎉 Ολοκληρώθηκε η συγχώνευση στο: {output_path}")
         except Exception as e:
             print(f"\n❌ Σφάλμα κατά την αποθήκευση: {e}")
     else:
         print("\n⚠️ Δεν βρέθηκαν δεδομένα προς συγχώνευση.")
 
-def show_field_selector(options):
-    selected = []
-
-    def submit():
-        nonlocal selected
-        selected = [name for name, var in vars if var.get()]
-        root.destroy()  # **Κλείνει το παράθυρο και βγαίνει από mainloop**
-
-    root = tk.Tk()
-    root.title("📝 Επιλογή Πεδίων")
-    root.geometry("400x500")
-
-    container = tk.Frame(root)
-    container.pack(fill="both", expand=True)
-
-    canvas = tk.Canvas(container)
-    scrollbar = tk.Scrollbar(container, orient="vertical", command=canvas.yview)
-    scrollable_frame = tk.Frame(canvas)
-
-    scrollable_frame.bind(
-        "<Configure>",
-        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-    )
-
-    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-    canvas.configure(yscrollcommand=scrollbar.set)
-
-    canvas.pack(side="left", fill="both", expand=True)
-    scrollbar.pack(side="right", fill="y")
-
-    vars = []
-    for opt in options:
-        var = tk.BooleanVar()
-        chk = tk.Checkbutton(scrollable_frame, text=opt, variable=var, anchor='w', justify='left')
-        chk.pack(fill='x', padx=10, anchor='w')
-        vars.append((opt, var))
-
-    submit_btn = tk.Button(root, text="✅ Συνέχεια", command=submit)
-    submit_btn.pack(pady=10)
-
-    root.mainloop()
-    return selected
-
-
 if __name__ == "__main__":
-    print("🔄 Συγχώνευση όλων των φύλλων Excel με επιλογή πεδίων...")
+    print("🔄 Συγχώνευση όλων των φύλλων από πολλαπλά Excel")
 
-    root = tk.Tk()
+    root = Tk()
     root.withdraw()
 
-    input_file = filedialog.askopenfilename(
-        title="📥 Επιλέξτε το αρχείο Excel εισόδου",
-        filetypes=[("Excel αρχεία", "*.xlsx")]
-    )
+    # 🧠 Ρώτα αν είναι ΕΣΠΑ ή ΔΙΑΣ
+    source_type = simpledialog.askstring(
+        "Τύπος Δεδομένων",
+        "Είναι τα αρχεία ΕΣΠΑ ή ΔΙΑΣ;\nΓράψε 'εσπα' ή 'διας'.")
 
-    if not input_file:
-        print("❌ Δεν επιλέχθηκε αρχείο εισόδου.")
+    if not source_type:
+        print("❌ Δεν επιλέχθηκε τύπος δεδομένων.")
         exit()
 
+    source_type = source_type.strip().lower()
+    if source_type == 'διας':
+        header_row = 3
+    elif source_type == 'εσπα':
+        header_row = 4
+    else:
+        print("❌ Μη αποδεκτός τύπος. Πρέπει να είναι 'εσπα' ή 'διας'.")
+        exit()
+
+    # 📂 Επιλογή Excel αρχείων
+    input_files = filedialog.askopenfilenames(
+        title="📥 Επιλέξτε ένα ή περισσότερα αρχεία Excel",
+        filetypes=[("Excel files", "*.xlsx")])
+
+    if not input_files:
+        print("❌ Δεν επιλέχθηκαν αρχεία.")
+        exit()
+
+    # ➕ Πρώτο πέρασμα για εύρεση πεδίων
+    all_columns = set()
+    for file_path in input_files:
+        try:
+            xl = pd.ExcelFile(file_path, engine='openpyxl')
+            for sheet in xl.sheet_names:
+                try:
+                    preview_df = xl.parse(sheet, header=None)
+                    if len(preview_df) >= (header_row + 1):
+                        df = xl.parse(sheet, header=header_row)
+                        valid_columns = [col for col in df.columns if isinstance(col, str) and col.strip()]
+                        all_columns.update(valid_columns)
+                except:
+                    continue
+        except Exception as e:
+            print(f"⚠️ Πρόβλημα με το {file_path}: {e}")
+
+    all_columns = sorted([col for col in all_columns if isinstance(col, str)])
+
+    # ✅ Εμφάνιση πεδίων
+    print("\n📋 Διαθέσιμα πεδία:")
+    for i, col in enumerate(all_columns, 1):
+        print(f"{i}. {col}")
+
+    selected_indices = simpledialog.askstring(
+        "Επιλογή Πεδίων",
+        "Δώσε τους αριθμούς των πεδίων που θέλεις (χωρισμένα με κόμμα):\nπ.χ. 1,3,5")
+
+    if not selected_indices:
+        print("❌ Δεν επιλέχθηκαν πεδία.")
+        exit()
+
+    try:
+        selected_fields = [all_columns[int(i.strip()) - 1] for i in selected_indices.split(',')]
+    except:
+        print("❌ Μη έγκυρη επιλογή.")
+        exit()
+
+    print("\n🔍 Επιλεγμένα πεδία:")
+    for field in selected_fields:
+        print(f"• {field}")
+
+    # 📤 Επιλογή αρχείου εξόδου
     output_file = filedialog.asksaveasfilename(
-        title="📤 Επιλέξτε που θα αποθηκευτεί το αρχείο",
+        title="📤 Επιλέξτε πού θα αποθηκευτεί το αρχείο",
         defaultextension=".xlsx",
-        filetypes=[("Excel αρχεία", "*.xlsx")]
-    )
+        filetypes=[("Excel files", "*.xlsx")])
 
     if not output_file:
-        print("❌ Δεν επιλέχθηκε αρχείο εξόδου.")
+        print("❌ Δεν επιλέχθηκε αρχείο αποθήκευσης.")
         exit()
 
-    merge_excel_sheets_select_fields(input_file, output_file)
+    merge_all_excels_select_fields(input_files, output_file, selected_fields, header_row)

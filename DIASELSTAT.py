@@ -17,12 +17,12 @@ def merge_all_excels_select_fields(excel_paths, output_path, selected_fields):
             try:
                 # Έλεγχος αν υπάρχουν τουλάχιστον 4 γραμμές
                 preview_df = xl.parse(sheet_name, header=None)
-                if len(preview_df) < 4:
+                if len(preview_df) < 6:
                     print(f"⚠️ Το φύλλο '{sheet_name}' στο '{os.path.basename(file_path)}' έχει < 4 γραμμές. Αγνοείται.")
                     continue
 
                 # Διαβάζουμε με header από 4η γραμμή
-                df = xl.parse(sheet_name, header=3)
+                df = xl.parse(sheet_name, header=5)
                 if not df.empty:
                     df.insert(0, 'source_sheet', sheet_name)
                     df.insert(0, 'source_file', os.path.basename(file_path))
@@ -96,6 +96,7 @@ if __name__ == "__main__":
 
     try:
         selected_fields = [all_columns[int(i.strip()) - 1] for i in selected_indices.split(',')]
+
     except:
         print("❌ Μη έγκυρη επιλογή.")
         exit()
