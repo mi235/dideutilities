@@ -25,25 +25,28 @@ col_w = df.columns[22]  # Στήλη W (23η)
 df = df[~df[col_o].astype(str).str.strip().isin(["Επεξεργασία", "Διαγραφή"])]
 df = df[~df[col_w].astype(str).str.strip().isin(["Επεξεργασία", "Διαγραφή"])]
 
-# ----- 5. Concatenate τιμών στη στήλη W όταν η γραμμή ξεκινάει με κόμμα -----
+# ----- 5. Concatenate στη στήλη W για γραμμές που ξεκινούν με κόμμα -----
+col_w_index = df.columns.get_loc(col_w)  # αριθμητική θέση της W
 rows_to_drop = []
-for i in range(1, len(df)):
-    current_val = str(df.iloc[i][col_w]).strip()
-    if current_val.startswith(','):
-        prev_val = str(df.iloc[i-1][col_w]).strip()
-        df.at[i-1, col_w] = prev_val + current_val
-        rows_to_drop.append(df.index[i])
 
-df = df.drop(index=rows_to_drop).reset_index(drop=True)
+for i in range(1, len(df)):
+    current_val = str(df.iloc[i, col_w_index]).strip()
+
+    if current_val.startswith(','):
+        prev_val = str(df.iloc[i - 1, col_w_index]).strip()
+        df.iloc[i - 1, col_w_index] = prev_val + current_val
+        rows_to_drop.append(i)
+
+df = df.drop(index=df.index[rows_to_drop]).reset_index(drop=True)
+
 
 # ----- 6. Συνάρτηση μορφοποίησης αριθμητικών -----
 def format_numeric(val, total_digits):
     try:
-        # Προσπαθούμε να μετατρέψουμε σε float και μετά int
         return str(int(float(val))).zfill(total_digits)
     except:
-        # Αν δεν είναι αριθμός, κρατάμε όπως είναι
         return str(val).strip() if pd.notnull(val) else ""
+
 
 # Στήλη 2 → 9 ψηφία
 col_2 = df.columns[1]
@@ -57,12 +60,19 @@ df[col_l] = df[col_l].apply(lambda x: format_numeric(x, 11))
 col_m = df.columns[12]
 df[col_m] = df[col_m].apply(lambda x: format_numeric(x, 9))
 
-# ----- 7. Μορφοποίηση στήλης H σε DD/MM/YYYY -----
+# ----- 7. Μορφοποίηση στήλης H σε DD/MM/YYYY μόνο για μη κενά κελιά -----
 col_h = df.columns[7]  # Στήλη H
+
+
 def format_date(val):
-    val = str(val).strip()
-    val = val.zfill(8)  # εξασφαλίζουμε 8 ψηφία
-    return f"{val[:2]}/{val[2:4]}/{val[4:]}"
+    if pd.notnull(val) and str(val).strip() != "":
+        val_int = int(float(val))  # αφαιρούμε το .0
+        val_str = str(val_int).zfill(8)  # εξασφαλίζουμε 8 ψηφία
+        return f"{val_str[:2]}/{val_str[2:4]}/{val_str[4:]}"
+    else:
+        return ""  # αφήνουμε κενό κελί ως έχει
+
+
 df[col_h] = df[col_h].apply(format_date)
 
 # ----- 8. Αποθήκευση -----
