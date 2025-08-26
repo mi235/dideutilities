@@ -1,6 +1,7 @@
 import os
 import shutil
 from tkinter import Tk, filedialog
+from openpyxl import Workbook
 
 # Διάλεξε φάκελο με τα έγγραφα
 root = Tk()
@@ -10,6 +11,9 @@ source_dir = filedialog.askdirectory(title="Επίλεξε φάκελο με έ�
 # Διάλεξε βασικό φάκελο με τους υποφακέλους
 base_dir = filedialog.askdirectory(title="Επίλεξε βασικό φάκελο με υποφακέλους")
 root.destroy()
+
+# λίστα με φακέλους που πήραν αρχεία
+folders_filled = set()
 
 # Πέρασμα από όλα τα αρχεία του source_dir
 for filename in os.listdir(source_dir):
@@ -30,4 +34,23 @@ for filename in os.listdir(source_dir):
                     print(f"Αντιγράφηκε: {filename} -> {folder}")
                 else:
                     print(f"Υπάρχει ήδη: {filename} στον {folder}")
+
+                # καταγράφουμε ότι ο φάκελος γέμισε
+                folders_filled.add(folder)
                 break
+
+# Δημιουργία Excel report
+if folders_filled:
+    report_path = os.path.join(base_dir, "report.xlsx")
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Φάκελοι"
+
+    ws.append(["Φάκελοι που γέμισαν"])
+    for folder in sorted(folders_filled):
+        ws.append([folder])
+
+    wb.save(report_path)
+    print(f"\n✅ Δημιουργήθηκε report: {report_path}")
+else:
+    print("\n⚠ Δεν γέμισε κανένας φάκελος.")
