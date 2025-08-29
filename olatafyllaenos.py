@@ -18,12 +18,12 @@ def merge_all_excels_all_fields(excel_paths, output_path):
         for sheet_name in xl.sheet_names:
             try:
                 preview_df = xl.parse(sheet_name, header=None)
-                if len(preview_df) < 2:
+                if len(preview_df) <1:
                     print(f"⚠️ Το φύλλο '{sheet_name}' στο '{os.path.basename(file_path)}' έχει < 2 γραμμές. Αγνοείται.")
                     continue
 
-                # Διαβάζουμε με header από 2η γραμμή (index 1)
-                df = xl.parse(sheet_name, header=1)
+                # Διαβάζουμε με header από1η γραμμή (index 0)
+                df = xl.parse(sheet_name, header=0)
                 df.columns = [str(col).strip() for col in df.columns]
 
                 if not df.empty:
